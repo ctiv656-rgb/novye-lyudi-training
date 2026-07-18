@@ -49,7 +49,7 @@ const lessons = {
 const grid=document.querySelector('#module-grid');
 const nav=document.querySelector('#main-nav');
 grid.innerHTML=modules.map((m,i)=>`<button class="module-card" data-module="${m.id}" style="--accent:${m.accent}"><span class="num">${i+1}</span><h2>${m.title}</h2><p>${m.desc}</p><span class="time">${m.time} →</span></button>`).join('');
-grid.insertAdjacentHTML('afterend',`<section class="home-captains-panel" aria-labelledby="home-captains-title"><div class="home-captains-image"><img src="assets/gallery/captains-01.jpg" alt="Участники бизнес-интенсива «Кампус»" loading="lazy"></div><div class="home-captains-copy"><span>ОБРАЗОВАТЕЛЬНЫЙ ПРОЕКТ</span><h2 id="home-captains-title">Факультет бизнеса «Капитаны»</h2><p>Практическая подготовка предпринимателей и управленцев: реальные проекты с первого курса, наставничество, бизнес-интенсивы и межрегиональное сообщество.</p><div class="home-captains-facts"><b>с 2016 года</b><b>900+ студентов</b><b>60 регионов</b></div><button type="button" data-module="captains">Подробнее о проекте →</button></div></section>`);
+grid.insertAdjacentHTML('beforeend',`<button class="module-card captains-module-card" data-module="captains" style="--accent:#43d1c4"><span class="num">7</span><h2>Проект «Капитаны»</h2><p>Факультет бизнеса, практическое обучение, наставничество и достижения сообщества.</p><span class="time">6 минут →</span></button>`);
 nav.innerHTML=`<button data-home>Главная</button>`+modules.map((m,i)=>`<button data-module="${m.id}">${i+1}. ${m.title}</button>`).join('');
 
 const catalog=document.querySelector('#catalog'),lesson=document.querySelector('#lesson'),content=document.querySelector('#lesson-content');
