@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#062e2f">
+  <title>База знаний — Новые люди</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#catalog" aria-label="На главную">
+      <span class="brand-mark">#</span>
+      <span><b>НОВЫЕ ЛЮДИ</b><small>База знаний команды</small></span>
+    </a>
+    <button class="menu-button" type="button" aria-expanded="false" aria-controls="main-nav">Разделы</button>
+    <nav id="main-nav" class="nav" aria-label="Основная навигация"></nav>
+  </header>
+
+  <main>
+    <section id="catalog" class="screen catalog-screen active" aria-labelledby="catalog-title">
+      <div class="hero">
+        <div>
+          <p class="eyebrow">ОБУЧЕНИЕ · СВЕРДЛОВСКАЯ ОБЛАСТЬ</p>
+          <h1 id="catalog-title">Знать главное.<br><span>Говорить уверенно.</span></h1>
+          <p class="hero-copy">Пять коротких модулей для знакомства с партией, ДЭГ, Александром Дёминым и региональной командой.</p>
+        </div>
+        <div class="hero-badge"><b>5</b><span>модулей<br>в одном месте</span></div>
+      </div>
+      <div id="module-grid" class="module-grid"></div>
+      <p class="source-note">Материалы собраны из презентации регионального отделения и открытых официальных источников. Данные, которые могут меняться, следует перепроверять перед использованием.</p>
+    </section>
+
+    <section id="lesson" class="screen lesson-screen" aria-live="polite">
+      <div class="lesson-head">
+        <button class="back-button" type="button">← Все модули</button>
+        <div class="lesson-progress"><span id="lesson-number"></span><i><b id="progress-bar"></b></i></div>
+      </div>
+      <article id="lesson-content"></article>
+    </section>
+  </main>
+
+  <footer><span>Новые люди · учебная версия</span><span>Обновлено: июль 2026</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>
