@@ -44,14 +44,15 @@
     return output;
   }
 
-  fetch('map.kml?v=map1')
-    .then(response => {
-      if (!response.ok) throw new Error('Не удалось загрузить KML');
-      return response.text();
-    })
-    .then(text => {
-      const xml = new DOMParser().parseFromString(text, 'application/xml');
-      const folders = [...xml.getElementsByTagNameNS('*', 'Folder')].filter(folder => directChildren(folder, 'Placemark').length);
+  Promise.all(['map.kml?v=map3', 'map-zakso-base.kml?v=map3'].map(source => fetch(source).then(response => {
+    if (!response.ok) throw new Error('Не удалось загрузить KML');
+    return response.text();
+  })))
+    .then(texts => {
+      const folders = texts.flatMap(text => {
+        const xml = new DOMParser().parseFromString(text, 'application/xml');
+        return [...xml.getElementsByTagNameNS('*', 'Folder')].filter(folder => directChildren(folder, 'Placemark').length);
+      });
       const overlays = [];
       filtersNode.innerHTML = `<form class="map-search"><label for="map-address">Найти адрес</label><div><input id="map-address" type="search" placeholder="Улица и номер дома" autocomplete="street-address"><button type="submit" aria-label="Найти адрес">Найти</button></div><output class="map-search-result" aria-live="polite"></output></form><h3>Показывать на карте</h3><p>Можно включить несколько слоёв одновременно.</p>`;
 
