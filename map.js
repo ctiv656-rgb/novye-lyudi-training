@@ -4,7 +4,9 @@
   if (!mapNode || !filtersNode || !window.L) return;
 
   const colors = ['#177bc9', '#03ad1b', '#f07e23', '#9b59b6', '#ff5165', '#ffd166', '#43d1c4'];
-  const map = L.map(mapNode, {scrollWheelZoom: false, zoomControl: true}).setView([56.84, 60.61], 8);
+  const ekaterinburgView = {center: [56.838, 60.605], zoom: 10};
+  const map = L.map(mapNode, {scrollWheelZoom: false, zoomControl: true}).setView(ekaterinburgView.center, ekaterinburgView.zoom);
+  let searchMarker;
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap'
@@ -34,7 +36,7 @@
           const coordNode = ring.getElementsByTagNameNS('*', 'coordinates')[0];
           return coordNode ? coordinates(coordNode.textContent) : [];
         }).filter(ring => ring.length);
-        if (rings.length) output.push(L.polygon(rings, {...style, fillOpacity: .13}).bindTooltip(title));
+        if (rings.length) output.push(L.polygon(rings, {...style, fillOpacity: .2}).bindTooltip(title));
       } else if (child.localName === 'MultiGeometry') {
         output.push(...geometryLayers(child, style, title));
       }
@@ -51,12 +53,37 @@
       const xml = new DOMParser().parseFromString(text, 'application/xml');
       const folders = [...xml.getElementsByTagNameNS('*', 'Folder')].filter(folder => directChildren(folder, 'Placemark').length);
       const overlays = [];
-      filtersNode.innerHTML = '<h3>Показывать на карте</h3><p>Можно включить несколько слоёв одновременно.</p>';
+      filtersNode.innerHTML = `<form class="map-search"><label for="map-address">Найти адрес</label><div><input id="map-address" type="search" placeholder="Улица и номер дома" autocomplete="street-address"><button type="submit" aria-label="Найти адрес">Найти</button></div><output class="map-search-result" aria-live="polite"></output></form><h3>Показывать на карте</h3><p>Можно включить несколько слоёв одновременно.</p>`;
+
+      const searchForm = filtersNode.querySelector('.map-search');
+      const searchInput = searchForm.querySelector('input');
+      const searchOutput = searchForm.querySelector('output');
+      searchForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const query = searchInput.value.trim();
+        if (!query) return;
+        searchOutput.textContent = 'Ищем адрес…';
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ru&q=${encodeURIComponent(`${query}, Екатеринбург`)}`)
+          .then(response => response.json())
+          .then(results => {
+            if (!results.length) {
+              searchOutput.textContent = 'Адрес не найден. Уточните улицу и номер дома.';
+              return;
+            }
+            const result = results[0];
+            const point = [Number(result.lat), Number(result.lon)];
+            if (searchMarker) searchMarker.remove();
+            searchMarker = L.marker(point).addTo(map).bindPopup(`<b>Найденный адрес</b><br>${result.display_name}`).openPopup();
+            map.setView(point, 16);
+            searchOutput.textContent = result.display_name;
+          })
+          .catch(() => { searchOutput.textContent = 'Не удалось выполнить поиск. Попробуйте ещё раз.'; });
+      });
 
       folders.forEach((folder, index) => {
         const name = firstText(folder, 'name') || `Слой ${index + 1}`;
         const color = colors[index % colors.length];
-        const style = {color, weight: name.includes('Округ ') ? 5 : 3, opacity: .9, fillColor: color};
+        const style = {color, weight: name.includes('Округ ') ? 7 : 5, opacity: 1, fillColor: color};
         const features = [];
         directChildren(folder, 'Placemark').forEach(placemark => {
           const title = firstText(placemark, 'name') || name;
@@ -74,18 +101,12 @@
         input.addEventListener('change', () => {
           if (input.checked) group.addTo(map); else group.removeFrom(map);
           label.classList.toggle('active', input.checked);
-          const visible = overlays.filter(item => map.hasLayer(item.group));
-          if (visible.length) {
-            const bounds = L.featureGroup(visible.map(item => item.group)).getBounds();
-            if (bounds.isValid()) map.fitBounds(bounds, {padding: [22, 22], maxZoom: 12});
-          }
+          map.setView(ekaterinburgView.center, ekaterinburgView.zoom);
         });
         filtersNode.appendChild(label);
       });
 
-      const defaults = overlays.filter(item => item.enabled).map(item => item.group);
-      const defaultBounds = L.featureGroup(defaults).getBounds();
-      if (defaultBounds.isValid()) map.fitBounds(defaultBounds, {padding: [24, 24], maxZoom: 11});
+      map.setView(ekaterinburgView.center, ekaterinburgView.zoom);
       setTimeout(() => map.invalidateSize(), 100);
     })
     .catch(() => {
